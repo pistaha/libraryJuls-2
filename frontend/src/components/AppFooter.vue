@@ -2,6 +2,7 @@
   <footer class="footer">
     <div class="footer__inner">
       <p>Library Juls</p>
+      <span>Vue 3 + Vue Router + FastAPI</span>
     </div>
   </footer>
 </template>
@@ -27,6 +28,10 @@
   margin: 0;
   font-weight: 600;
   color: #334e68;
+}
+
+.footer__inner span {
+  color: #627d98;
 }
 
 @media (max-width: 768px) {
