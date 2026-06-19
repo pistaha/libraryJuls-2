@@ -1,4 +1,5 @@
 <template>
+  <LitresSearch :catalog-books="books" :import-book="importBook" />
   <BookList
     :books="books"
     :loading="loading"
@@ -11,6 +12,7 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import BookList from '@/components/BookList.vue';
+import LitresSearch from '@/components/LitresSearch.vue';
 import { createBook, fetchBooks, removeBook } from '@/services/booksApi';
 
 const books = ref([]);
@@ -38,6 +40,18 @@ async function addBook(bookPayload) {
     books.value = [...books.value, createdBook];
   } catch (error) {
     errorMessage.value = 'Не удалось добавить книгу.';
+  }
+}
+
+async function importBook(bookPayload) {
+  errorMessage.value = '';
+
+  try {
+    const createdBook = await createBook(bookPayload);
+    books.value = [...books.value, createdBook];
+    return createdBook;
+  } catch (error) {
+    throw new Error('Book import failed');
   }
 }
 

@@ -2,7 +2,7 @@
   <footer class="footer">
     <div class="footer__inner">
       <p>Library Juls</p>
-      <span>Vue 3 + Vue Router + FastAPI</span>
+      <span>Электронная библиотека</span>
     </div>
   </footer>
 </template>

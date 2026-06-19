@@ -1,24 +1,90 @@
 [
   {
-    "id": 2,
-    "title": "Python для сложных задач",
-    "author": "Лучано Рамальо",
-    "description": "Практическое руководство по современным возможностям Python.",
-    "publisher": "Питер",
-    "year": 2023,
+    "id": 1,
+    "title": "Clean Code",
+    "author": "Robert C. Martin",
+    "description": "Практическое руководство по написанию понятного, поддерживаемого и надежного кода.",
+    "publisher": "Prentice Hall",
+    "year": 2008,
     "category": "Программирование",
     "available": true,
     "created_at": "2026-05-23T00:00:00+00:00"
   },
   {
-    "id": 4,
-    "title": "как закрыть алгосы на 5?",
-    "author": "Дарья Путина",
-    "description": "краткачя справа как закрыть предмет на т5",
-    "publisher": "Москва",
-    "year": 2026,
-    "category": "учеба",
+    "id": 2,
+    "title": "Fluent Python",
+    "author": "Luciano Ramalho",
+    "description": "Подробное руководство по возможностям Python, протоколам, коллекциям и асинхронности.",
+    "publisher": "O'Reilly Media",
+    "year": 2022,
+    "category": "Программирование",
     "available": true,
-    "created_at": "2026-05-29T07:51:31.579032+00:00"
+    "created_at": "2026-05-23T00:00:00+00:00"
+  },
+  {
+    "id": 3,
+    "title": "Designing Data-Intensive Applications",
+    "author": "Martin Kleppmann",
+    "description": "Книга о проектировании распределенных систем, хранилищ данных и надежных приложений.",
+    "publisher": "O'Reilly Media",
+    "year": 2017,
+    "category": "Архитектура",
+    "available": false,
+    "created_at": "2026-05-23T00:00:00+00:00"
+  },
+  {
+    "id": 4,
+    "title": "Война и мир",
+    "author": "Лев Толстой",
+    "description": "Роман-эпопея о судьбах семей Болконских, Ростовых и Безуховых на фоне событий 1812 года.",
+    "publisher": "Эксмо",
+    "year": 2022,
+    "category": "Художественная литература",
+    "available": true,
+    "created_at": "2026-05-23T00:00:00+00:00"
+  },
+  {
+    "id": 5,
+    "title": "Мастер и Маргарита",
+    "author": "Михаил Булгаков",
+    "description": "Роман о Москве, Понтии Пилате, Воланде и силе личного выбора.",
+    "publisher": "АСТ",
+    "year": 2021,
+    "category": "Художественная литература",
+    "available": false,
+    "created_at": "2026-05-23T00:00:00+00:00"
+  },
+  {
+    "id": 6,
+    "title": "A Brief History of Time",
+    "author": "Stephen Hawking",
+    "description": "Популярное изложение идей современной космологии, черных дыр и происхождения Вселенной.",
+    "publisher": "Bantam Books",
+    "year": 1988,
+    "category": "Наука",
+    "available": true,
+    "created_at": "2026-05-23T00:00:00+00:00"
+  },
+  {
+    "id": 7,
+    "title": "Анна Каренина",
+    "author": "Лев Толстой",
+    "description": "Иллюстрированное издание",
+    "publisher": "Литрес Классика",
+    "year": 2026,
+    "category": "ЛитРес",
+    "available": true,
+    "created_at": "2026-06-19T09:34:30.653886+00:00"
+  },
+  {
+    "id": 8,
+    "title": "Война и Мир. Том 1-2",
+    "author": "Лев Толстой",
+    "description": "Иллюстрированное издание",
+    "publisher": "Литрес Классика",
+    "year": 2026,
+    "category": "ЛитРес",
+    "available": true,
+    "created_at": "2026-06-19T09:35:00+00:00"
   }
 ]

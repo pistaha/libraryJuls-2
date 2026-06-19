@@ -34,3 +34,8 @@ export function removeBook(bookId) {
     method: 'DELETE',
   });
 }
+
+export function searchLitresBooks(query, limit = 8) {
+  const params = new URLSearchParams({ q: query, limit: String(limit) });
+  return requestJson(`/api/litres/search?${params.toString()}`);
+}

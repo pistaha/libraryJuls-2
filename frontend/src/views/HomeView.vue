@@ -4,8 +4,8 @@
       <p class="eyebrow">Электронная библиотека</p>
       <h1>Library Juls</h1>
       <p>
-        SPA-прототип для учета книг, управления электронным каталогом и перехода
-        между основными разделами библиотечного сервиса.
+        Электронная библиотека для просмотра каталога, добавления книг и
+        перехода между основными разделами сервиса.
       </p>
       <div class="home__actions">
         <RouterLink class="button button--primary" to="/catalog">Открыть каталог</RouterLink>
@@ -16,19 +16,19 @@
     <div class="home__grid" aria-label="Разделы приложения">
       <RouterLink class="home-card" to="/catalog">
         <span>Каталог</span>
-        <strong>Поиск, фильтры и добавление книг через API</strong>
+        <strong>Поиск, фильтры и книги из каталога ЛитРес</strong>
       </RouterLink>
       <RouterLink class="home-card" to="/reader">
         <span>Читалка</span>
-        <strong>Заглушка будущего раздела для чтения электронных книг</strong>
+        <strong>Раздел для чтения электронных книг</strong>
       </RouterLink>
       <RouterLink class="home-card" to="/favorites">
         <span>Избранное</span>
-        <strong>Заглушка списка сохраненных книг пользователя</strong>
+        <strong>Список сохраненных книг пользователя</strong>
       </RouterLink>
       <RouterLink class="home-card" to="/profile">
         <span>Профиль</span>
-        <strong>Заглушка личного кабинета читателя</strong>
+        <strong>Личный кабинет читателя</strong>
       </RouterLink>
     </div>
   </section>

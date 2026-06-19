@@ -5,13 +5,18 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import List
 
+import httpx
 from fastapi import FastAPI, HTTPException
+from fastapi import Query
 from pydantic import BaseModel, Field
 
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = Path("/app/data") if Path("/app").exists() else BASE_DIR.parent / "data"
 BOOKS_FILE = DATA_DIR / "books.json"
+LITRES_API_URL = "https://api.litres.ru/foundation/api/search"
+LITRES_SITE_URL = "https://www.litres.ru"
+LITRES_CDN_URL = "https://cdn.litres.ru"
 
 
 def current_timestamp() -> str:
@@ -101,6 +106,21 @@ class BookCreate(BaseModel):
     available: bool = True
 
 
+class LitresBook(BaseModel):
+    id: int
+    title: str
+    author: str
+    subtitle: str | None = None
+    publisher: str | None = None
+    year: int | None = None
+    cover_url: str | None = None
+    litres_url: str
+    price: float | None = None
+    currency: str | None = None
+    rating: float | None = None
+    is_free: bool = False
+
+
 app = FastAPI(title="Library Juls API")
 
 
@@ -151,3 +171,57 @@ def delete_book(book_id: int) -> dict[str, int]:
 
     save_books(updated_books)
     return {"deleted_id": book_id}
+
+
+@app.get("/api/litres/search", response_model=List[LitresBook])
+async def search_litres_books(
+    q: str = Query(..., min_length=2, max_length=100),
+    limit: int = Query(8, ge=1, le=20),
+) -> list[dict]:
+    """Search text books on LitRes and return a stable subset of its response."""
+    params = [("q", q), ("types", "text_book"), ("limit", str(limit))]
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(LITRES_API_URL, params=params)
+            response.raise_for_status()
+            payload = response.json()
+    except (httpx.HTTPError, ValueError) as error:
+        raise HTTPException(status_code=502, detail="LitRes API is unavailable") from error
+
+    if payload.get("status") != 200:
+        raise HTTPException(status_code=502, detail="LitRes API returned an error")
+
+    results = []
+    for search_item in payload.get("payload", {}).get("data", []):
+        if search_item.get("type") != "text_book":
+            continue
+
+        item = search_item.get("instance", {})
+        persons = item.get("persons") or []
+        authors = [person["full_name"] for person in persons if person.get("role") == "author"]
+        publishers = [person["full_name"] for person in persons if person.get("role") == "publisher"]
+        prices = item.get("prices") or {}
+        rating = item.get("rating") or {}
+        released_at = item.get("last_released_at") or ""
+        cover_path = item.get("cover_url")
+        book_path = item.get("url") or ""
+
+        results.append(
+            {
+                "id": item["id"],
+                "title": item.get("title") or "Без названия",
+                "author": ", ".join(authors) or "Автор не указан",
+                "subtitle": item.get("subtitle"),
+                "publisher": ", ".join(publishers) or None,
+                "year": int(released_at[:4]) if released_at[:4].isdigit() else None,
+                "cover_url": f"{LITRES_CDN_URL}{cover_path}" if cover_path else None,
+                "litres_url": f"{LITRES_SITE_URL}{book_path}",
+                "price": prices.get("final_price"),
+                "currency": prices.get("currency"),
+                "rating": rating.get("rated_avg"),
+                "is_free": bool(item.get("is_free")),
+            }
+        )
+
+    return results
