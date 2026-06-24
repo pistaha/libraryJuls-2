@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import List
@@ -14,6 +15,7 @@ from pydantic import BaseModel, Field
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = Path("/app/data") if Path("/app").exists() else BASE_DIR.parent / "data"
 BOOKS_FILE = DATA_DIR / "books.json"
+DATABASE_FILE = DATA_DIR / "books.db"
 LITRES_API_URL = "https://api.litres.ru/foundation/api/search"
 LITRES_SITE_URL = "https://www.litres.ru"
 LITRES_CDN_URL = "https://cdn.litres.ru"
@@ -35,6 +37,9 @@ def default_books() -> list[dict]:
             "year": 2022,
             "category": "Художественная литература",
             "available": True,
+            "favorite": False,
+            "booked": False,
+            "cover_url": None,
             "created_at": timestamp,
         },
         {
@@ -46,6 +51,9 @@ def default_books() -> list[dict]:
             "year": 2023,
             "category": "Программирование",
             "available": True,
+            "favorite": False,
+            "booked": False,
+            "cover_url": None,
             "created_at": timestamp,
         },
         {
@@ -57,31 +65,95 @@ def default_books() -> list[dict]:
             "year": 2021,
             "category": "История",
             "available": False,
+            "favorite": False,
+            "booked": False,
+            "cover_url": None,
             "created_at": timestamp,
         },
     ]
 
 
-def ensure_books_file() -> None:
+def get_connection() -> sqlite3.Connection:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    if not BOOKS_FILE.exists():
-        BOOKS_FILE.write_text(
-            json.dumps(default_books(), ensure_ascii=False, indent=2),
-            encoding="utf-8",
+    connection = sqlite3.connect(DATABASE_FILE)
+    connection.row_factory = sqlite3.Row
+    return connection
+
+
+def row_to_book(row: sqlite3.Row) -> dict:
+    book = dict(row)
+    book["available"] = bool(book["available"])
+    book["favorite"] = bool(book["favorite"])
+    book["booked"] = bool(book["booked"])
+    return book
+
+
+def ensure_database() -> None:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    with get_connection() as connection:
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS books (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                author TEXT NOT NULL,
+                description TEXT NOT NULL,
+                publisher TEXT NOT NULL,
+                year INTEGER NOT NULL,
+                category TEXT NOT NULL,
+                available INTEGER NOT NULL DEFAULT 1,
+                favorite INTEGER NOT NULL DEFAULT 0,
+                booked INTEGER NOT NULL DEFAULT 0,
+                cover_url TEXT,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+
+        books_count = connection.execute("SELECT COUNT(*) FROM books").fetchone()[0]
+        if books_count:
+            return
+
+        seed_books = default_books()
+        if BOOKS_FILE.exists():
+            seed_books = json.loads(BOOKS_FILE.read_text(encoding="utf-8"))
+
+        connection.executemany(
+            """
+            INSERT INTO books (
+                id, title, author, description, publisher, year, category,
+                available, favorite, booked, cover_url, created_at
+            )
+            VALUES (
+                :id, :title, :author, :description, :publisher, :year, :category,
+                :available, :favorite, :booked, :cover_url, :created_at
+            )
+            """,
+            [
+                {
+                    **book,
+                    "available": int(book.get("available", True)),
+                    "favorite": int(book.get("favorite", False)),
+                    "booked": int(book.get("booked", False)),
+                    "cover_url": book.get("cover_url"),
+                }
+                for book in seed_books
+            ],
         )
 
 
 def load_books() -> list[dict]:
-    ensure_books_file()
-    return json.loads(BOOKS_FILE.read_text(encoding="utf-8"))
+    ensure_database()
+    with get_connection() as connection:
+        rows = connection.execute("SELECT * FROM books ORDER BY id").fetchall()
+    return [row_to_book(row) for row in rows]
 
 
-def save_books(books: list[dict]) -> None:
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    BOOKS_FILE.write_text(
-        json.dumps(books, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+def find_book(book_id: int) -> dict | None:
+    ensure_database()
+    with get_connection() as connection:
+        row = connection.execute("SELECT * FROM books WHERE id = ?", (book_id,)).fetchone()
+    return row_to_book(row) if row else None
 
 
 class Book(BaseModel):
@@ -136,7 +208,7 @@ app = FastAPI(title="Library Juls API")
 
 @app.on_event("startup")
 def startup() -> None:
-    ensure_books_file()
+    ensure_database()
 
 
 @app.get("/api/health")
@@ -151,74 +223,102 @@ def get_books() -> list[dict]:
 
 @app.get("/api/books/{book_id}", response_model=Book)
 def get_book(book_id: int) -> dict:
-    books = load_books()
-    for book in books:
-        if book["id"] == book_id:
-            return book
+    book = find_book(book_id)
+    if book:
+        return book
 
     raise HTTPException(status_code=404, detail="Book not found")
 
 
 @app.post("/api/books", response_model=Book, status_code=201)
 def create_book(payload: BookCreate) -> dict:
-    books = load_books()
-    next_id = max((book["id"] for book in books), default=0) + 1
+    ensure_database()
+    created_at = current_timestamp()
 
-    new_book = {
-        "id": next_id,
-        "title": payload.title,
-        "author": payload.author,
-        "description": payload.description,
-        "publisher": payload.publisher,
-        "year": payload.year,
-        "category": payload.category,
-        "available": payload.available,
-        "favorite": payload.favorite,
-        "booked": payload.booked,
-        "cover_url": payload.cover_url,
-        "created_at": current_timestamp(),
-    }
+    with get_connection() as connection:
+        cursor = connection.execute(
+            """
+            INSERT INTO books (
+                title, author, description, publisher, year, category,
+                available, favorite, booked, cover_url, created_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                payload.title,
+                payload.author,
+                payload.description,
+                payload.publisher,
+                payload.year,
+                payload.category,
+                int(payload.available),
+                int(payload.favorite),
+                int(payload.booked),
+                payload.cover_url,
+                created_at,
+            ),
+        )
 
-    books.append(new_book)
-    save_books(books)
-    return new_book
+    created_book = find_book(cursor.lastrowid)
+    if created_book:
+        return created_book
+
+    raise HTTPException(status_code=500, detail="Book was not created")
 
 
 @app.put("/api/books/{book_id}", response_model=Book)
 def update_book(book_id: int, payload: BookUpdate) -> dict:
-    books = load_books()
+    ensure_database()
+    with get_connection() as connection:
+        cursor = connection.execute(
+            """
+            UPDATE books
+            SET title = ?,
+                author = ?,
+                description = ?,
+                publisher = ?,
+                year = ?,
+                category = ?,
+                available = ?,
+                favorite = ?,
+                booked = ?,
+                cover_url = ?
+            WHERE id = ?
+            """,
+            (
+                payload.title,
+                payload.author,
+                payload.description,
+                payload.publisher,
+                payload.year,
+                payload.category,
+                int(payload.available),
+                int(payload.favorite),
+                int(payload.booked),
+                payload.cover_url,
+                book_id,
+            ),
+        )
 
-    for index, book in enumerate(books):
-        if book["id"] == book_id:
-            updated_book = {
-                **book,
-                "title": payload.title,
-                "author": payload.author,
-                "description": payload.description,
-                "publisher": payload.publisher,
-                "year": payload.year,
-                "category": payload.category,
-                "available": payload.available,
-                "favorite": payload.favorite,
-                "booked": payload.booked,
-                "cover_url": payload.cover_url,
-            }
-            books[index] = updated_book
-            save_books(books)
-            return updated_book
+    if cursor.rowcount == 0:
+        raise HTTPException(status_code=404, detail="Book not found")
+
+    updated_book = find_book(book_id)
+    if updated_book:
+        return updated_book
 
     raise HTTPException(status_code=404, detail="Book not found")
 
 
 @app.delete("/api/books/{book_id}")
 def delete_book(book_id: int) -> dict[str, int]:
-    books = load_books()
-    updated_books = [book for book in books if book["id"] != book_id]
+    ensure_database()
+    with get_connection() as connection:
+        cursor = connection.execute("DELETE FROM books WHERE id = ?", (book_id,))
 
-    if len(updated_books) == len(books):
+    if cursor.rowcount == 0:
         raise HTTPException(status_code=404, detail="Book not found")
 
-    save_books(updated_books)
     return {"deleted_id": book_id}
 
 

@@ -103,7 +103,7 @@ SPA-приложение электронной библиотеки на Vue 3 
 
 ## Серверная часть
 
-Backend написан на FastAPI. Данные хранятся в `data/books.json`, файл монтируется в Docker как volume и обновляется после POST, PUT и DELETE-запросов.
+Backend написан на FastAPI. Данные хранятся в SQLite-базе `data/books.db`, файл монтируется в Docker как volume и обновляется после POST, PUT и DELETE-запросов. Файл `data/books.json` оставлен как стартовый набор данных для первичной инициализации базы, если SQLite-файла еще нет.
 
 | Метод | Маршрут | Назначение |
 | --- | --- | --- |
@@ -153,6 +153,7 @@ libraryJuls/
 │   ├── main.py
 │   └── requirements.txt
 ├── data/
+│   ├── books.db
 │   └── books.json
 ├── docs/
 │   └── imgs/
@@ -198,6 +199,8 @@ libraryJuls/
 ![Поиск книг в ЛитРес](docs/imgs/app-litres.png)
 
 ## Пример данных
+
+Данные хранятся в таблице `books` внутри SQLite-файла `data/books.db`.
 
 ```json
 {
