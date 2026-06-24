@@ -3,7 +3,7 @@
     <p>{{ eyebrow }}</p>
     <h1>{{ title }}</h1>
     <span>{{ description }}</span>
-    <RouterLink to="/catalog">Перейти в каталог</RouterLink>
+    <RouterLink to="/books">перейти в каталог</RouterLink>
   </section>
 </template>
 

@@ -1,8 +1,8 @@
 <template>
   <PlaceholderView
-    title="Избранное"
-    eyebrow="Раздел библиотеки"
-    description="В избранном пока нет книг."
+    title="избранное"
+    eyebrow="раздел библиотеки"
+    description="в избранном ничего нет, так как мы не фанаты книг, особенно с литрес."
   />
 </template>
 

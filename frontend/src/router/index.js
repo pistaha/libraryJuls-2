@@ -8,8 +8,28 @@ const routes = [
   },
   {
     path: '/catalog',
-    name: 'catalog',
-    component: () => import('@/views/CatalogView.vue'),
+    redirect: { name: 'books' },
+  },
+  {
+    path: '/books',
+    component: () => import('@/views/BooksLayoutView.vue'),
+    children: [
+      {
+        path: '',
+        name: 'books',
+        component: () => import('@/views/CatalogView.vue'),
+      },
+      {
+        path: 'new',
+        name: 'book-new',
+        component: () => import('@/views/BookCreateView.vue'),
+      },
+      {
+        path: ':id/edit',
+        name: 'book-edit',
+        component: () => import('@/views/BookEditView.vue'),
+      },
+    ],
   },
   {
     path: '/reader',

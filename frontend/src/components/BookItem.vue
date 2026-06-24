@@ -3,7 +3,7 @@
     <div class="book-card__top">
       <span class="book-card__category">{{ book.category }}</span>
       <span :class="['book-card__badge', book.available ? 'is-available' : 'is-busy']">
-        {{ book.available ? 'Доступна' : 'Выдана' }}
+        {{ book.available ? 'В наличии' : 'Выдана' }}
       </span>
     </div>
 
@@ -22,9 +22,29 @@
       </div>
     </dl>
 
-    <button class="book-card__delete" type="button" @click="$emit('delete-book')">
-      Удалить
-    </button>
+    <div class="book-card__flags">
+      <span v-if="book.favorite">В избранном</span>
+      <span v-if="book.booked">Забронирована</span>
+      <span v-if="book.cover_url">Обложка: {{ book.cover_url }}</span>
+    </div>
+
+    <div class="book-card__actions">
+      <RouterLink :to="{ name: 'book-edit', params: { id: book.id } }">
+        Редактировать
+      </RouterLink>
+      <button type="button" @click="$emit('toggle-status', book)">
+        Изменить статус
+      </button>
+      <button type="button" @click="$emit('toggle-favorite', book)">
+        {{ book.favorite ? 'Убрать сердечко' : 'В избранное' }}
+      </button>
+      <button type="button" @click="$emit('toggle-booked', book)">
+        {{ book.booked ? 'Снять бронь' : 'Забронировать' }}
+      </button>
+      <button class="book-card__delete" type="button" @click="$emit('delete-book')">
+        Удалить
+      </button>
+    </div>
   </article>
 </template>
 
@@ -36,15 +56,17 @@ defineProps({
   },
 });
 
-defineEmits(['delete-book']);
+defineEmits(['delete-book', 'toggle-status', 'toggle-favorite', 'toggle-booked']);
 </script>
 
 <style scoped>
 .book-card {
+  display: grid;
+  align-content: start;
   padding: 20px;
-  border-radius: 20px;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
   border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
 }
 
 .book-card__top {
@@ -117,20 +139,55 @@ defineEmits(['delete-book']);
   font-weight: 600;
 }
 
-.book-card__delete {
-  width: 100%;
+.book-card__flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.book-card__flags span {
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #eef6ff;
+  color: #334e68;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.book-card__actions {
+  display: grid;
+  gap: 9px;
   margin-top: 18px;
-  border: 1px solid rgba(153, 27, 27, 0.18);
+}
+
+.book-card__actions a,
+.book-card__actions button {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid rgba(15, 118, 110, 0.24);
   border-radius: 8px;
-  padding: 10px 12px;
-  background: #fff5f5;
-  color: #991b1b;
+  padding: 9px 10px;
+  background: #ffffff;
+  color: #0f766e;
   font: inherit;
   font-weight: 700;
+  text-align: center;
   cursor: pointer;
 }
 
-.book-card__delete:hover {
+.book-card__actions a:hover,
+.book-card__actions button:hover {
+  background: #ecfdf5;
+}
+
+.book-card__actions .book-card__delete {
+  border-color: rgba(153, 27, 27, 0.18);
+  background: #fff5f5;
+  color: #991b1b;
+}
+
+.book-card__actions .book-card__delete:hover {
   background: #fee2e2;
 }
 </style>

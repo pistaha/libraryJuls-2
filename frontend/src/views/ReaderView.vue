@@ -1,8 +1,8 @@
 <template>
   <PlaceholderView
-    title="Читалка"
-    eyebrow="Раздел библиотеки"
-    description="Выберите книгу в каталоге, чтобы начать чтение."
+    title="читалка"
+    eyebrow="раздел библиотеки"
+    description="пока читаем только ТЗ...."
   />
 </template>
 

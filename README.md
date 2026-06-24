@@ -1,97 +1,149 @@
 # Library Juls
 
-Прототип электронной библиотеки с клиентской частью на Vue, сервером на FastAPI и поиском книг в каталоге ЛитРес.
+SPA-приложение электронной библиотеки на Vue 3 с серверной частью на FastAPI.
 
-**Авторы:** Рыбаков Я.В., Смирнова Ю.Е.<br>
-**Группа:** P3269<br>
+**Авторы:** Рыбаков Я.В., Смирнова Ю.Е.  
+**Группа:** P3269  
+**Дата:** 24.06.2026  
 **Репозиторий:** <https://github.com/pistaha/libraryJuls-2>
-
-## Оглавление
-
-- [Цель и требования](#цель-работы)
-- [Функциональность](#функциональность)
-- [Архитектура и структура](#архитектура-приложения)
-- [Запуск проекта](#локальный-запуск)
-- [Скриншоты](#скриншоты)
 
 ## Цель работы
 
-Разработать прототип веб-приложения электронной библиотеки, разделить его на frontend и backend, настроить клиентскую маршрутизацию, обмен данными через REST API, сборку Vite и контейнерный запуск.
+Разработать учебный прототип электронной библиотеки: клиентскую часть на Vue 3, серверную часть на Python, REST API для работы с книгами, маршрутизацию, формы, компоненты и запуск через Docker.
 
-## Выполнение требований
+## Реализованный функционал
 
-### Создание фронтэнд-составляющей. Часть 1
+- главная страница с переходом в электронный каталог;
+- список книг с выводом через `v-for`;
+- фильтрация по категории, наличию, избранному и брони;
+- сортировка по дате добавления и по названию;
+- условный рендеринг загрузки, ошибки и пустого списка;
+- создание книги через отдельную страницу `/books/new`;
+- редактирование книги через `/books/:id/edit`;
+- удаление книги из каталога;
+- изменение статуса наличия;
+- добавление книги в избранное;
+- бронирование книги;
+- поиск книг в ЛитРес через backend-прокси;
+- импорт найденной книги из ЛитРес в локальный каталог;
+- страница 404 с отдельным оформлением;
+- Docker-запуск frontend и backend.
 
-| Требование | Реализация |
+## Vue 3
+
+В проекте используются базовые возможности Vue 3:
+
+- `v-model.trim` и `v-model.number` в форме книги;
+- `v-if`, `v-else-if`, `v-else` для состояний списка;
+- `v-for` для вывода книг и вариантов формы;
+- `computed` для фильтрации, сортировки и списка категорий;
+- `watch` для реакции на изменение фильтров;
+- `props` в компонентах `BookItem`, `BookList`, `BookForm`, `LayoutCard`;
+- события дочерних компонентов: удаление, изменение статуса, избранное, бронь;
+- жизненный цикл `onMounted` для загрузки данных с сервера.
+
+## Компоненты
+
+| Компонент | Назначение |
 | --- | --- |
-| Создание Vite-проекта | Frontend создан на Vue 3 и Vite |
-| Контейнер для frontend | Добавлены `frontend/Dockerfile` и конфигурация nginx |
-| Настройка Vite | Настроены Vue-плагин, alias `@`, порт и proxy для `/api` |
-| Production-сборка | Приложение собирается командой `npm run build` |
-| Скриншоты приложения | Изображения размещены в `docs/imgs` и добавлены в отчет |
-| Сервер с GET и POST | Backend на FastAPI предоставляет маршруты получения и добавления книг |
-| Данные каталога | Начальные записи находятся в `data/books.json`, также используются данные ЛитРес |
+| `AppHeader.vue` | верхнее меню приложения |
+| `AppFooter.vue` | нижняя панель |
+| `BookList.vue` | список книг, фильтрация и сортировка |
+| `BookItem.vue` | карточка одной книги |
+| `BookForm.vue` | форма создания и редактирования |
+| `LayoutCard.vue` | общий компонент-обертка со слотами |
+| `LitresSearch.vue` | поиск книг в каталоге ЛитРес |
 
-### Создание фронтэнд-составляющей. Часть 2
+## Слоты
 
-| Требование | Реализация |
-| --- | --- |
-| Views и components | Реализованы страницы приложения и переиспользуемые компоненты |
-| Клиентский router | Настроены основные маршруты, страница об авторах и обработка 404 |
-| Связь frontend и backend | Frontend выполняет GET, POST и DELETE-запросы к FastAPI |
-| Подключение внешнего каталога | Поиск ЛитРес выполняется через backend-прокси |
+Слоты используются в компоненте `LayoutCard.vue`:
 
-## Функциональность
+- обычный слот для основного содержимого;
+- именованный слот `actions` для кнопок в шапке карточки;
+- именованный scoped-slot `meta`, который получает данные карточки.
 
-- просмотр локального каталога;
-- поиск по названию, автору, описанию и издательству;
-- фильтрация по категории и статусу доступности;
-- добавление и удаление книг;
-- поиск электронных книг в ЛитРес;
-- отображение обложки, автора, рейтинга и цены;
-- переход на страницу книги в ЛитРес;
-- сохранение найденной книги в локальный каталог;
-- защита от повторного добавления одной книги из результатов поиска;
-- переходы между разделами без перезагрузки страницы;
-- отдельная страница для неизвестного маршрута.
+Пример использования:
 
-## Используемые технологии
+```vue
+<LayoutCard title="Книги библиотеки" eyebrow="Каталог">
+  <template #actions>
+    <RouterLink to="/books/new">Добавить книгу</RouterLink>
+  </template>
 
-### Frontend
+  <template #meta="{ title }">
+    {{ title }}: найдено {{ filteredBooks.length }}
+  </template>
 
-- Vue 3;
-- Vue Router;
-- Vite;
-- JavaScript;
-- HTML и CSS;
-- Fetch API.
-
-### Backend
-
-- Python;
-- FastAPI;
-- Pydantic;
-- HTTPX;
-- Uvicorn;
-- JSON-файл для хранения данных.
-
-### Инфраструктура
-
-- Docker;
-- Docker Compose;
-- nginx.
-
-## Архитектура приложения
-
-Frontend обращается только к маршрутам `/api`. В режиме разработки Vite перенаправляет запросы на FastAPI, а при контейнерном запуске эту задачу выполняет nginx.
-
-Поиск во внешнем каталоге проходит по цепочке:
-
-```text
-Vue → /api/litres/search → FastAPI → API ЛитРес
+  <BookItem
+    v-for="book in filteredBooks"
+    :key="book.id"
+    :book="book"
+    @delete-book="deleteBook"
+  />
+</LayoutCard>
 ```
 
-Backend преобразует ответ ЛитРес в единый формат и передает клиенту только используемые поля. Запрос к внешнему сервису не выполняется напрямую из браузера.
+## Маршрутизация
+
+Маршрутизация реализована через Vue Router.
+
+| Маршрут | Назначение |
+| --- | --- |
+| `/` | главная страница |
+| `/books` | список книг |
+| `/books/new` | создание книги |
+| `/books/:id/edit` | редактирование книги |
+| `/catalog` | редирект на `/books` для старых ссылок |
+| `/reader` | заглушка читалки |
+| `/favorites` | заглушка избранного |
+| `/profile` | профиль читателя |
+| `/about` | информация об авторах |
+| `/:pathMatch(.*)*` | страница 404 |
+
+Для группы `/books` используется вложенная маршрутизация через `BooksLayoutView.vue`. После создания или редактирования книги выполняется программная навигация `router.push({ name: 'books' })`.
+
+## Серверная часть
+
+Backend написан на FastAPI. Данные хранятся в `data/books.json`, файл монтируется в Docker как volume и обновляется после POST, PUT и DELETE-запросов.
+
+| Метод | Маршрут | Назначение |
+| --- | --- | --- |
+| `GET` | `/api/health` | проверка состояния сервера |
+| `GET` | `/api/books` | получение списка книг |
+| `GET` | `/api/books/{book_id}` | получение одной книги |
+| `POST` | `/api/books` | создание книги |
+| `PUT` | `/api/books/{book_id}` | редактирование книги |
+| `DELETE` | `/api/books/{book_id}` | удаление книги |
+| `GET` | `/api/litres/search?q={query}&limit={limit}` | поиск книг в ЛитРес |
+
+Пример тела POST/PUT-запроса:
+
+```json
+{
+  "title": "Название книги",
+  "author": "Автор",
+  "description": "Описание",
+  "publisher": "Издательство",
+  "year": 2026,
+  "category": "12+",
+  "available": true,
+  "favorite": false,
+  "booked": false,
+  "cover_url": "cover.jpg"
+}
+```
+
+## Интеграция с ЛитРес
+
+Frontend не обращается к ЛитРес напрямую. Пользователь вводит запрос в `LitresSearch.vue`, frontend отправляет запрос на `/api/litres/search`, затем FastAPI делает внешний запрос к `https://api.litres.ru/foundation/api/search`.
+
+Схема:
+
+```text
+Vue → /api/litres/search → FastAPI → API ЛитРес → FastAPI → Vue
+```
+
+Backend приводит ответ ЛитРес к единому формату: название, автор, издатель, год, обложка, цена, рейтинг и ссылка на страницу книги.
 
 ## Структура проекта
 
@@ -110,27 +162,19 @@ libraryJuls/
 │       └── app-litres.png
 ├── frontend/
 │   ├── src/
+│   │   ├── assets/
+│   │   │   └── sad-404.jpg
 │   │   ├── components/
 │   │   │   ├── AppFooter.vue
 │   │   │   ├── AppHeader.vue
+│   │   │   ├── BookForm.vue
 │   │   │   ├── BookItem.vue
 │   │   │   ├── BookList.vue
+│   │   │   ├── LayoutCard.vue
 │   │   │   └── LitresSearch.vue
 │   │   ├── router/
-│   │   │   └── index.js
 │   │   ├── services/
-│   │   │   └── booksApi.js
-│   │   ├── views/
-│   │   │   ├── AboutView.vue
-│   │   │   ├── CatalogView.vue
-│   │   │   ├── FavoritesView.vue
-│   │   │   ├── HomeView.vue
-│   │   │   ├── NotFoundView.vue
-│   │   │   ├── PlaceholderView.vue
-│   │   │   ├── ProfileView.vue
-│   │   │   └── ReaderView.vue
-│   │   ├── App.vue
-│   │   └── main.js
+│   │   └── views/
 │   ├── Dockerfile
 │   ├── index.html
 │   ├── nginx.conf
@@ -138,103 +182,6 @@ libraryJuls/
 │   └── vite.config.js
 ├── docker-compose.yml
 └── README.md
-```
-
-## Маршруты frontend
-
-| Маршрут | Назначение |
-| --- | --- |
-| `/` | Главная страница |
-| `/catalog` | Локальный каталог и поиск ЛитРес |
-| `/reader` | Раздел чтения |
-| `/favorites` | Избранные книги |
-| `/profile` | Профиль читателя |
-| `/about` | Информация об авторах и проекте |
-| `/:pathMatch(.*)*` | Страница 404 |
-
-## REST API
-
-| Метод | Маршрут | Назначение |
-| --- | --- | --- |
-| `GET` | `/api/health` | Проверка состояния сервера |
-| `GET` | `/api/books` | Получение локального каталога |
-| `POST` | `/api/books` | Добавление книги |
-| `DELETE` | `/api/books/{book_id}` | Удаление книги |
-| `GET` | `/api/litres/search?q={query}&limit={limit}` | Поиск книг в ЛитРес |
-
-Тело POST-запроса:
-
-```json
-{
-  "title": "Название книги",
-  "author": "Автор",
-  "description": "Описание",
-  "publisher": "Издательство",
-  "year": 2026,
-  "category": "Категория",
-  "available": true
-}
-```
-
-## Локальный запуск
-
-### Backend
-
-```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
-```
-
-Backend будет доступен по адресу <http://127.0.0.1:8000>. Интерактивная документация FastAPI находится по адресу <http://127.0.0.1:8000/docs>.
-
-### Frontend
-
-В отдельном окне терминала:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Frontend будет доступен по адресу <http://127.0.0.1:3000>.
-
-Production-сборка frontend:
-
-```bash
-cd frontend
-npm run build
-```
-
-## Запуск через Docker Compose
-
-```bash
-docker compose up --build
-```
-
-После запуска доступны:
-
-- frontend: <http://localhost:3000>;
-- backend: <http://localhost:8000>;
-- Swagger UI: <http://localhost:8000/docs>.
-
-Остановка контейнеров:
-
-```bash
-docker compose down
-```
-
-## Проверка API
-
-```bash
-curl http://127.0.0.1:8000/api/health
-curl http://127.0.0.1:8000/api/books
-curl --get http://127.0.0.1:8000/api/litres/search \
-  --data-urlencode "q=Лев Толстой" \
-  --data "limit=3"
 ```
 
 ## Скриншоты
@@ -251,6 +198,87 @@ curl --get http://127.0.0.1:8000/api/litres/search \
 
 ![Поиск книг в ЛитРес](docs/imgs/app-litres.png)
 
-## Результат
+## Пример данных
+
+```json
+{
+  "id": 1,
+  "title": "Clean Code",
+  "author": "Robert C. Martin",
+  "description": "Практическое руководство по написанию понятного кода.",
+  "publisher": "Prentice Hall",
+  "year": 2008,
+  "category": "Программирование",
+  "available": true,
+  "favorite": false,
+  "booked": false,
+  "cover_url": null,
+  "created_at": "2026-05-23T00:00:00+00:00"
+}
+```
+
+## Локальный запуск
+
+### Backend
+
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+```
+
+Backend будет доступен по адресу <http://127.0.0.1:8000>. Swagger UI: <http://127.0.0.1:8000/docs>.
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend будет доступен по адресу <http://127.0.0.1:3000>.
+
+Production-сборка:
+
+```bash
+cd frontend
+npm run build
+```
+
+## Запуск через Docker
+
+```bash
+docker compose up -d --build
+```
+
+После запуска:
+
+- frontend: <http://localhost:3000>;
+- backend: <http://localhost:8000>;
+- Swagger UI: <http://localhost:8000/docs>.
+
+Остановка:
+
+```bash
+docker compose down
+```
+
+## Проверка API
+
+```bash
+curl http://127.0.0.1:8000/api/health
+curl http://127.0.0.1:8000/api/books
+curl http://127.0.0.1:8000/api/books/1
+curl --get http://127.0.0.1:8000/api/litres/search \
+  --data-urlencode "q=Лев Толстой" \
+  --data "limit=3"
+```
+
+## Вывод
 
 Создан прототип электронной библиотеки с клиентской маршрутизацией, локальным каталогом, серверным REST API и интеграцией с ЛитРес. Проект поддерживает запуск в режиме разработки и через Docker Compose.
+
+В ходе работы были использованы компоненты Vue 3, формы, computed/watch, маршрутизация, слоты, REST API на FastAPI, интеграция с внешним каталогом ЛитРес и Docker Compose для запуска frontend и backend.

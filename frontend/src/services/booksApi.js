@@ -22,9 +22,20 @@ export function fetchBooks() {
   return requestJson('/api/books');
 }
 
+export function fetchBook(bookId) {
+  return requestJson(`/api/books/${bookId}`);
+}
+
 export function createBook(bookPayload) {
   return requestJson('/api/books', {
     method: 'POST',
+    body: JSON.stringify(bookPayload),
+  });
+}
+
+export function updateBook(bookId, bookPayload) {
+  return requestJson(`/api/books/${bookId}`, {
+    method: 'PUT',
     body: JSON.stringify(bookPayload),
   });
 }

@@ -1,8 +1,8 @@
 <template>
   <PlaceholderView
-    title="Профиль читателя"
-    eyebrow="Личный кабинет"
-    description="История выдач пока пуста."
+    title="профиль читателя"
+    eyebrow="личный кабинет"
+    description="история выдач пока пуста."
   />
 </template>
 

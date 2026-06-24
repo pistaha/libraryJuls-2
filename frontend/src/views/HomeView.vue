@@ -8,13 +8,13 @@
         перехода между основными разделами сервиса.
       </p>
       <div class="home__actions">
-        <RouterLink class="button button--primary" to="/catalog">Открыть каталог</RouterLink>
+        <RouterLink class="button button--primary" to="/books">Открыть каталог</RouterLink>
         <RouterLink class="button" to="/about">Об авторе</RouterLink>
       </div>
     </div>
 
     <div class="home__grid" aria-label="Разделы приложения">
-      <RouterLink class="home-card" to="/catalog">
+      <RouterLink class="home-card" to="/books">
         <span>Каталог</span>
         <strong>Поиск, фильтры и книги из каталога ЛитРес</strong>
       </RouterLink>

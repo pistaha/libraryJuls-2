@@ -93,6 +93,9 @@ class Book(BaseModel):
     year: int
     category: str
     available: bool
+    favorite: bool = False
+    booked: bool = False
+    cover_url: str | None = None
     created_at: str
 
 
@@ -104,6 +107,13 @@ class BookCreate(BaseModel):
     year: int
     category: str = Field(..., min_length=1)
     available: bool = True
+    favorite: bool = False
+    booked: bool = False
+    cover_url: str | None = None
+
+
+class BookUpdate(BookCreate):
+    pass
 
 
 class LitresBook(BaseModel):
@@ -139,6 +149,16 @@ def get_books() -> list[dict]:
     return load_books()
 
 
+@app.get("/api/books/{book_id}", response_model=Book)
+def get_book(book_id: int) -> dict:
+    books = load_books()
+    for book in books:
+        if book["id"] == book_id:
+            return book
+
+    raise HTTPException(status_code=404, detail="Book not found")
+
+
 @app.post("/api/books", response_model=Book, status_code=201)
 def create_book(payload: BookCreate) -> dict:
     books = load_books()
@@ -153,12 +173,41 @@ def create_book(payload: BookCreate) -> dict:
         "year": payload.year,
         "category": payload.category,
         "available": payload.available,
+        "favorite": payload.favorite,
+        "booked": payload.booked,
+        "cover_url": payload.cover_url,
         "created_at": current_timestamp(),
     }
 
     books.append(new_book)
     save_books(books)
     return new_book
+
+
+@app.put("/api/books/{book_id}", response_model=Book)
+def update_book(book_id: int, payload: BookUpdate) -> dict:
+    books = load_books()
+
+    for index, book in enumerate(books):
+        if book["id"] == book_id:
+            updated_book = {
+                **book,
+                "title": payload.title,
+                "author": payload.author,
+                "description": payload.description,
+                "publisher": payload.publisher,
+                "year": payload.year,
+                "category": payload.category,
+                "available": payload.available,
+                "favorite": payload.favorite,
+                "booked": payload.booked,
+                "cover_url": payload.cover_url,
+            }
+            books[index] = updated_book
+            save_books(books)
+            return updated_book
+
+    raise HTTPException(status_code=404, detail="Book not found")
 
 
 @app.delete("/api/books/{book_id}")

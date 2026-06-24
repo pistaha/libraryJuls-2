@@ -6,7 +6,7 @@
       </div>
       <nav class="header__nav">
         <RouterLink to="/">Главная</RouterLink>
-        <RouterLink to="/catalog">Каталог</RouterLink>
+        <RouterLink to="/books">Каталог</RouterLink>
         <RouterLink to="/reader">Читалка</RouterLink>
         <RouterLink to="/favorites">Избранное</RouterLink>
         <RouterLink to="/profile">Профиль</RouterLink>
