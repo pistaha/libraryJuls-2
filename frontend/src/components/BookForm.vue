@@ -37,9 +37,9 @@
 
     <fieldset>
       <legend>Возрастной рейтинг</legend>
-      <label v-for="category in categories" :key="category" class="book-form__radio">
-        <input v-model="form.category" required type="radio" :value="category">
-        {{ category }}
+      <label v-for="rating in ageRatings" :key="rating" class="book-form__radio">
+        <input v-model="form.category" required type="radio" :value="rating">
+        {{ rating }}
       </label>
     </fieldset>
 
@@ -96,20 +96,7 @@ const publishers = [
   'ИТМОНЯ',
   'тайгер',
 ];
-const categories = [
-  '0+',
-  '6+',
-  '12+',
-  '16+',
-  '18+',
-  'Программирование',
-  'программирование',
-  'Художественная литература',
-  'Архитектура',
-  'Наука',
-  'ЛитРес',
-  'житуха',
-];
+const ageRatings = ['0+', '6+', '12+', '16+', '18+'];
 const validationMessage = ref('');
 
 const form = reactive(createForm(props.initialBook));
@@ -128,7 +115,7 @@ function createForm(book) {
     description: book?.description || '',
     publisher: book?.publisher || '',
     year: book?.year || currentYear,
-    category: book?.category || '12+',
+    category: ageRatings.includes(book?.category) ? book.category : '12+',
     available: book?.available ?? true,
     favorite: book?.favorite ?? false,
     booked: book?.booked ?? false,
@@ -220,8 +207,9 @@ function submitBook() {
 }
 
 .book-form fieldset {
-  grid-template-columns: repeat(auto-fit, minmax(86px, max-content));
-  gap: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 24px;
   margin: 0;
   padding: 14px;
   border: 1px solid rgba(98, 125, 152, 0.24);
@@ -238,6 +226,8 @@ function submitBook() {
   grid-template-columns: none !important;
   align-items: center;
   gap: 8px !important;
+  min-width: 72px;
+  white-space: nowrap;
 }
 
 .book-form__radio input,
