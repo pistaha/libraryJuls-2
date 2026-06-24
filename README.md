@@ -3,7 +3,8 @@
 SPA-приложение электронной библиотеки на Vue 3 с серверной частью на FastAPI.
 
 **Авторы:** Рыбаков Я.В., Смирнова Ю.Е.  
-**Группа:** P3269 
+**Группа:** P3269  
+**Дата:** 24.06.2026  
 **Репозиторий:** <https://github.com/pistaha/libraryJuls-2>
 
 ## Цель работы
@@ -217,6 +218,19 @@ libraryJuls/
   "cover_url": null,
   "created_at": "2026-05-23T00:00:00+00:00"
 }
+```
+
+Проверить базу можно из терминала:
+
+```bash
+sqlite3 data/books.db
+```
+
+```sql
+.tables
+.headers on
+.mode table
+SELECT id, title, author, publisher, year, available, favorite, booked FROM books;
 ```
 
 ## Локальный запуск
