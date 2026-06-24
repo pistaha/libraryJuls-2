@@ -238,7 +238,7 @@ npm install
 npm run dev
 ```
 
-Frontend будет доступен по адресу <http://127.0.0.1:3000>.
+Frontend будет доступен по адресу <http://127.0.0.1:3000>. 
 
 Production-сборка:
 
